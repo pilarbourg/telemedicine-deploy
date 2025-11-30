@@ -1,0 +1,252 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <title>Doctor Dashboard</title>
+    <link
+      rel="icon"
+      type="image/x-icon"
+      href="/frontend/assets/svgs/logo.ico"
+    />
+    <link rel="stylesheet" href="../styles/patient.css" />
+    <link rel="stylesheet" href="../styles/doctor.css" />
+  </head>
+  <body>
+    <nav class="nav-patient">
+      <h1>
+        <img
+          src="../assets/svgs/logo.svg"
+          style="margin-right: 1rem; width: 40px"
+        />MotivSMA
+      </h1>
+      <div class="links">
+        <button id="logout-button" class="btn-logout">Logout</button>
+      </div>
+    </nav>
+
+    <div class="patient-dashboard-header">
+      <h3>Doctor Dashboard</h3>
+      <div class="sidebar"></div>
+    </div>
+
+    <main>
+      <section class="main-div">
+        <div class="left-column">
+          <div class="doctor-info">
+            <div class="icon-circle">
+              <img src="../assets/svgs/logo_white.svg" alt="Logo" />
+            </div>
+            <div class="current-profile">
+              <h2 class="section-title">Current Profile</h2>
+              <div class="doctor-details">
+                <div>
+                  <div class="detail-group">
+                    <label>Name:</label>
+                    <p id="detail-name" class="detail-value"></p>
+                  </div>
+
+                  <div class="detail-group">
+                    <label>Surname:</label>
+                    <p id="detail-surname" class="detail-value"></p>
+                  </div>
+
+                  <div class="detail-group">
+                    <label>Gender:</label>
+                    <p id="detail-gender" class="detail-value"></p>
+                  </div>
+
+                  <div class="detail-group">
+                    <label>Locality:</label>
+                    <p id="detail-locality" class="detail-value"></p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="doctor-info doctor-info-edit">
+            <h2>Edit Profile</h2>
+            <form id="doctor-form">
+              <div class="doctor-info-form">
+                <div class="form-group">
+                  <label for="doctor-name">Name:</label>
+                  <input type="text" id="doctor-name" name="doctor-name" />
+                </div>
+
+                <div class="form-group">
+                  <label for="doctor-surname">Surname:</label>
+                  <input
+                    type="text"
+                    id="doctor-surname"
+                    name="doctor-surname"
+                  />
+                </div>
+
+                <div class="form-group">
+                  <label for="doctor-gender">Gender:</label>
+                  <select id="doctor-gender" name="doctor-gender">
+                    <option value="">Select gender</option>
+                    <option value="MALE">Male</option>
+                    <option value="FEMALE">Female</option>
+                  </select>
+                </div>
+
+                <div class="form-group">
+                  <label for="doctor-locality">Locality:</label>
+                  <select id="doctor-locality" name="doctor-locality">
+                    <option value="">Select locality</option>
+                    <option value="Madrid">Madrid</option>
+                    <option value="Barcelona">Barcelona</option>
+                    <option value="Valencia">Valencia</option>
+                    <option value="Sevilla">Sevilla</option>
+                    <option value="Zaragoza">Zaragoza</option>
+                    <option value="Málaga">Málaga</option>
+                    <option value="Murcia">Murcia</option>
+                    <option value="Palma de Mallorca">Palma de Mallorca</option>
+                    <option value="Bilbao">Bilbao</option>
+                    <option value="Alicante">Alicante</option>
+                    <option value="Córdoba">Córdoba</option>
+                    <option value="Valladolid">Valladolid</option>
+                    <option value="Vigo">Vigo</option>
+                    <option value="Gijón">Gijón</option>
+                    <option value="A Coruña">A Coruña</option>
+                    <option value="Granada">Granada</option>
+                    <option value="Santander">Santander</option>
+                    <option value="Pamplona">Pamplona</option>
+                    <option value="Logroño">Logroño</option>
+                    <option value="Salamanca">Salamanca</option>
+                    <option value="Cáceres">Cáceres</option>
+                    <option value="Badajoz">Badajoz</option>
+                    <option value="Cádiz">Cádiz</option>
+                    <option value="Almería">Almería</option>
+                    <option value="Huelva">Huelva</option>
+                    <option value="León">León</option>
+                    <option value="Burgos">Burgos</option>
+                    <option value="San Sebastián">San Sebastián</option>
+                    <option value="Oviedo">Oviedo</option>
+                    <option value="Tarragona">Tarragona</option>
+                    <option value="Lleida">Lleida</option>
+                    <option value="Girona">Girona</option>
+                    <option value="Marbella">Marbella</option>
+                    <option value="Benidorm">Benidorm</option>
+                    <option value="Elche">Elche</option>
+                    <option value="Terrassa">Terrassa</option>
+                    <option value="Sabadell">Sabadell</option>
+                    <option value="Getafe">Getafe</option>
+                    <option value="Leganés">Leganés</option>
+                    <option value="Móstoles">Móstoles</option>
+                    <option value="Fuenlabrada">Fuenlabrada</option>
+                    <option value="Alcalá de Henares">Alcalá de Henares</option>
+                    <option value="Alcobendas">Alcobendas</option>
+                    <option value="Pozuelo de Alarcón">
+                      Pozuelo de Alarcón
+                    </option>
+                    <option value="Rivas-Vaciamadrid">Rivas-Vaciamadrid</option>
+                  </select>
+                </div>
+              </div>
+
+              <div class="form-actions">
+                <button type="submit">Save</button>
+              </div>
+            </form>
+          </div>
+        </div>
+
+        <article class="doctor-dashboard-buttons right-column">
+          <div id="requests-box" class="floating-box">
+            <h3 id="requests-title">Patient Requests (0)</h3>
+            <div id="requests-list">Loading requests...</div>
+          </div>
+
+          <div id="patients-box" class="floating-box">
+            <h3>Current Patients</h3>
+            <table
+              id="patients-table"
+              style="width: 100%; border-collapse: collapse"
+            >
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Name</th>
+                  <th>Surname</th>
+                  <th>Gender</th>
+                  <th>Birth Date</th>
+                  <th>Height (cm)</th>
+                  <th>Weight (kg)</th>
+                  <th>Sessions</th>
+                </tr>
+              </thead>
+              <tbody id="patients-body"></tbody>
+            </table>
+          </div>
+          <div id="sessions-container" class="hidden"></div>
+          <div
+            id="confirm-modal"
+            class="modal-overlay"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="modal-message"
+            aria-hidden="true"
+          >
+            <div class="modal-box">
+              <p id="modal-message">Are you sure?</p>
+              <div class="modal-buttons">
+                <button id="modal-approve-btn" class="modal-btn approve">
+                  Approve
+                </button>
+                <button
+                  id="modal-reject-btn"
+                  class="modal-btn reject"
+                  style="display: none"
+                >
+                  Reject
+                </button>
+                <button id="modal-cancel-btn" class="modal-btn cancel">
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </div>
+          <div id="reports-box" class="floating-box">
+            <h3 id="reports-title">Patient Reports</h3>
+            <div id="reports-container"></div>
+          </div>
+        </article>
+      </section>
+    </main>
+
+    <footer class="site-footer">
+      <div class="footer-content">
+        <div class="footer-brand">
+          <img src="../assets/svgs/logo_white.svg" alt="MotivSMA Logo" />
+          <span>MotivSMA</span>
+        </div>
+        <div class="footer-links">
+          <a href="#">About</a>
+          <a href="#">Privacy Policy</a>
+          <a href="#">Contact</a>
+        </div>
+        <div class="footer-copy">
+          &copy; 2025 MotivSMA | All rights reserved
+        </div>
+      </div>
+    </footer>
+    <div id="toast-container"></div>
+
+    <script>
+      const token = localStorage.getItem("token");
+      const role = localStorage.getItem("role");
+
+      if (!token) {
+        window.location.href = "../../index.html";
+      } else if (role !== "DOCTOR") {
+        window.location.href = "../../index.html";
+      }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/jwt-decode@3.1.2/build/jwt-decode.min.js"></script>
+    <script src="../js/logout.js"></script>
+    <script src="../js/doctor.js"></script>
+  </body>
+</html>

@@ -1,0 +1,934 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const token = localStorage.getItem("token");
+  if (!token) window.location.href = "../../index.html";
+
+  const claims = jwt_decode(token);
+  if (claims.role !== "DOCTOR") window.location.href = "../../index.html";
+
+  const currentDoctorId = claims.doctorId;
+
+  async function apiFetch(url, options = {}) {
+    const res = await fetch(url, {
+      ...options,
+      headers: { ...(options.headers || {}), Authorization: `Bearer ${token}` },
+    });
+    if (!res) return null;
+    return res;
+  }
+
+  const requestsBox = document.getElementById("requests-box");
+  const patientsBox = document.getElementById("patients-box");
+  const requestsList = document.getElementById("requests-list");
+  const requestsTitle = document.getElementById("requests-title");
+  const patientsBody = document.getElementById("patients-body");
+
+  let sessionsContainer = null;
+
+  const modal = document.getElementById("confirm-modal");
+  const modalMessage = document.getElementById("modal-message");
+  const btnApprove = document.getElementById("modal-approve-btn");
+  const btnReject = document.getElementById("modal-reject-btn");
+  const btnCancel = document.getElementById("modal-cancel-btn");
+
+  loadRequests();
+  loadPatients();
+
+  async function loadRequests() {
+    requestsList.innerHTML = "Loading requests...";
+    try {
+      const res = await apiFetch(
+        `https://127.0.0.1:8443/api/doctors/me/requests`
+      );
+
+      if (!res.ok) {
+        requestsList.innerHTML = `<div style="color:#811">No separate 'requests' endpoint found or none pending.</div>`;
+        requestsTitle.textContent = `Patient Requests (0)`;
+        return;
+      }
+
+      const list = await res.json();
+      requestsTitle.textContent = `Patient Requests (${list.length})`;
+      requestsList.innerHTML = "";
+
+      list.forEach((req) => {
+        const row = document.createElement("div");
+        row.className = "request-row";
+
+        const left = document.createElement("div");
+        left.className = "request-left";
+        left.innerHTML = `
+          <strong>${req.name} ${req.surname}</strong><br>
+          <div>
+          Gender: ${req.gender}<br/>
+          Birthdate: ${req.birthDate}<br/>
+          </div>
+          <div>
+          Height: ${req.height} cm<br/>
+          Weight: ${req.weight} kg
+          </div>
+        `;
+
+        const actions = document.createElement("div");
+        actions.className = "request-actions";
+
+        const acc = document.createElement("button");
+        acc.className = "accept-btn";
+        acc.textContent = "Approve";
+        acc.onclick = () => handleApprove(req.patientId);
+
+        const dec = document.createElement("button");
+        dec.className = "decline-btn";
+        dec.textContent = "Reject";
+        dec.onclick = () => handleReject(req.patientId);
+
+        actions.appendChild(acc);
+        actions.appendChild(dec);
+
+        row.appendChild(left);
+        row.appendChild(actions);
+
+        requestsList.appendChild(row);
+      });
+    } catch (err) {
+      console.error(err);
+      requestsList.innerHTML = `<div>Error loading requests.</div>`;
+    }
+  }
+
+  async function loadPatients() {
+    patientsBody.innerHTML = "<tr><td colspan='7'>Loading...</td></tr>";
+    try {
+      const res = await apiFetch(
+        `https://127.0.0.1:8443/api/doctors/me/patients`
+      );
+
+      if (!res.ok) {
+        patientsBody.innerHTML =
+          "<tr><td colspan='7'>Could not load patients</td></tr>";
+        return;
+      }
+
+      const list = await res.json();
+      patientsBody.innerHTML = "";
+
+      if (!Array.isArray(list) || list.length === 0) {
+        patientsBody.innerHTML =
+          "<tr><td colspan='7'>No patients yet</td></tr>";
+        return;
+      }
+
+      list.forEach((p) => {
+        const tr = document.createElement("tr");
+        tr.innerHTML = `
+          <td style="padding:.6rem;border:1px solid #eee">${p.patientId}</td>
+          <td style="padding:.6rem;border:1px solid #eee">${p.name}</td>
+          <td style="padding:.6rem;border:1px solid #eee">${p.surname}</td>
+          <td style="padding:.6rem;border:1px solid #eee">${p.gender}</td>
+          <td style="padding:.6rem;border:1px solid #eee">${p.birthDate}</td>
+          <td style="padding:.6rem;border:1px solid #eee">${p.height}</td>
+          <td style="padding:.6rem;border:1px solid #eee">${p.weight}</td>
+          <td style="padding:.6rem;border:1px solid #eee; text-align:center;">
+            <button class="view-sessions-btn" data-patient-id="${p.patientId}" 
+              style="background:#f05454; color:white; border:none; padding:0.4rem 0.8rem; border-radius: 12px; cursor:pointer;">
+              View Sessions
+            </button>
+          </td>
+        `;
+        patientsBody.appendChild(tr);
+      });
+
+      document.querySelectorAll(".view-sessions-btn").forEach((btn) => {
+        btn.addEventListener("click", async (e) => {
+          const patientId = btn.getAttribute("data-patient-id");
+          await toggleSessionsForPatient(patientId, btn);
+        });
+      });
+    } catch (err) {
+      console.error(err);
+      patientsBody.innerHTML =
+        "<tr><td colspan='7'>Error loading patients</td></tr>";
+    }
+  }
+
+  function showConfirmModal({ message, type = "approve" }) {
+    return new Promise((resolve) => {
+      modalMessage.textContent = message;
+
+      if (type === "approve") {
+        btnApprove.style.display = "inline-block";
+        btnReject.style.display = "none";
+      } else if (type === "reject") {
+        btnApprove.style.display = "none";
+        btnReject.style.display = "inline-block";
+      }
+
+      modal.classList.add("show");
+      modal.setAttribute("aria-hidden", "false");
+      btnApprove.focus();
+
+      function cleanup() {
+        btnApprove.removeEventListener("click", onApprove);
+        btnReject.removeEventListener("click", onReject);
+        btnCancel.removeEventListener("click", onCancel);
+        modal.removeEventListener("click", onBackdropClick);
+      }
+
+      function onApprove() {
+        cleanup();
+        closeModal();
+        resolve(true);
+      }
+
+      function onReject() {
+        cleanup();
+        closeModal();
+        resolve(true);
+      }
+
+      function onCancel() {
+        cleanup();
+        closeModal();
+        resolve(false);
+      }
+
+      function onBackdropClick(e) {
+        if (e.target === modal) {
+          onCancel();
+        }
+      }
+
+      btnApprove.addEventListener("click", onApprove);
+      btnReject.addEventListener("click", onReject);
+      btnCancel.addEventListener("click", onCancel);
+      modal.addEventListener("click", onBackdropClick);
+    });
+  }
+
+  async function toggleSessionsForPatient(patientId, button) {
+    if (
+      sessionsContainer &&
+      sessionsContainer.dataset.patientId === patientId
+    ) {
+      if (sessionsContainer.style.display === "none") {
+        sessionsContainer.style.display = "block";
+        button.textContent = "Hide Sessions";
+      } else {
+        sessionsContainer.style.display = "none";
+        button.textContent = "View Sessions";
+      }
+      return;
+    }
+
+    if (sessionsContainer) {
+      sessionsContainer.remove();
+    }
+
+    sessionsContainer = document.createElement("div");
+    sessionsContainer.style.background = "#ffffff";
+    sessionsContainer.style.borderRadius = "12px";
+    sessionsContainer.style.margin = "1rem auto";
+    sessionsContainer.style.width = "100%";
+    sessionsContainer.style.color = "#3e4042";
+    sessionsContainer.dataset.patientId = patientId;
+
+    patientsBox.appendChild(sessionsContainer);
+
+    button.textContent = "Loading sessions...";
+
+    try {
+      const res = await apiFetch(
+        `https://127.0.0.1:8443/api/patients/sessions/${patientId}`
+      );
+      if (!res.ok) {
+        sessionsContainer.textContent = "Failed to load sessions";
+        button.textContent = "View Sessions";
+        return;
+      }
+      const sessions = await res.json();
+
+      if (!sessions.length) {
+        sessionsContainer.textContent = "No sessions found for this patient.";
+        button.textContent = "Hide Sessions";
+        return;
+      }
+
+      button.textContent = "Hide Sessions";
+
+      sessionsContainer.innerHTML = "";
+      sessions.forEach((session) => {
+        const sessionDiv = document.createElement("div");
+        sessionDiv.style.marginBottom = "1rem";
+        sessionDiv.style.borderRadius = "10px";
+        sessionDiv.style.background = "#fff";
+        sessionDiv.style.width = "100%";
+        sessionDiv.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.08)";
+
+        const header = document.createElement("div");
+        header.style.cursor = "pointer";
+        header.style.padding = "0.8rem 1rem";
+        header.style.display = "flex";
+        header.style.alignItems = "center";
+        header.style.gap = "0.6rem";
+        header.style.userSelect = "none";
+
+        const arrow = document.createElement("span");
+        arrow.textContent = "▶";
+        arrow.style.transition = "transform 0.3s ease";
+        arrow.style.display = "inline-block";
+
+        const dateSpan = document.createElement("span");
+        dateSpan.textContent = new Date(session.timeStamp).toLocaleString();
+
+        header.appendChild(arrow);
+        header.appendChild(dateSpan);
+        sessionDiv.appendChild(header);
+
+        const details = document.createElement("div");
+        details.style.padding = "0 1rem 1rem 2rem";
+        details.style.display = "none";
+
+        sessionDiv.appendChild(details);
+
+        header.addEventListener("click", async () => {
+          if (details.style.display === "block") {
+            details.style.display = "none";
+            arrow.style.transform = "rotate(0deg)";
+          } else {
+            details.style.display = "block";
+            arrow.style.transform = "rotate(90deg)";
+
+            if (!details.hasChildNodes()) {
+              details.textContent = "Loading session details...";
+              try {
+                const [symptoms, signals] = await Promise.all([
+                  apiFetch(
+                    `https://127.0.0.1:8443/api/patients/sessions/${session.sessionId}/symptoms`
+                  ).then((r) => r.json()),
+                  apiFetch(
+                    `https://127.0.0.1:8443/api/patients/sessions/${session.sessionId}/signals`
+                  ).then((r) => r.json()),
+                ]);
+
+                details.innerHTML = "";
+
+                const symptomsTitle = document.createElement("h4");
+                symptomsTitle.textContent = "Symptoms:";
+                symptomsTitle.style.marginBottom = "0.4rem";
+                symptomsTitle.style.color = "#3e4042";
+
+                details.appendChild(symptomsTitle);
+
+                if (symptoms.length === 0) {
+                  const noSymptoms = document.createElement("p");
+                  noSymptoms.textContent = "No symptoms recorded.";
+                  details.appendChild(noSymptoms);
+                } else {
+                  const ul = document.createElement("ul");
+                  symptoms.forEach((s) => {
+                    const li = document.createElement("li");
+                    li.textContent = s;
+                    li.style.marginLeft = "1.5rem";
+                    li.style.marginBottom = "0.3rem";
+                    li.style.color = "#3e4042";
+                    ul.appendChild(li);
+                  });
+                  details.appendChild(ul);
+                }
+
+                if (signals.length === 0) {
+                  const noSignals = document.createElement("p");
+                  noSignals.textContent = "No signals recorded.";
+                  details.appendChild(noSignals);
+                } else {
+                  signals.forEach((signal) => {
+                    const signalDiv = document.createElement("div");
+
+                    signalDiv.style.marginBottom = "0.8rem";
+                    signalDiv.style.borderRadius = "10px";
+                    signalDiv.style.padding = "1.5rem";
+                    signalDiv.style.background = "#fafafa";
+                    signalDiv.style.boxShadow =
+                      "0 4px 12px rgba(0, 0, 0, 0.08)";
+                    signalDiv.style.width = "100%";
+                    signalDiv.style.boxSizing = "border-box";
+                    signalDiv.style.marginTop = "1rem";
+
+                    const signalHeader = document.createElement("div");
+                    signalHeader.textContent = signal.signalType + " Signal";
+                    signalHeader.style.fontWeight = "600";
+                    signalHeader.style.marginBottom = "0.5rem";
+
+                    signalDiv.appendChild(signalHeader);
+
+                    const canvas = document.createElement("canvas");
+                    canvas.style.width = "100%";
+                    canvas.style.height = "120px";
+                    signalDiv.appendChild(canvas);
+                    renderSignalChart(canvas, signal.patientSignalData);
+
+                    details.appendChild(signalDiv);
+                  });
+
+                  const commentsTextarea = document.createElement("textarea");
+                  commentsTextarea.placeholder = "Doctor's notes here ...";
+                  commentsTextarea.style.width = "100%";
+                  commentsTextarea.style.height = "80px";
+                  commentsTextarea.style.marginTop = "1rem";
+                  commentsTextarea.style.padding = "0.5rem";
+                  commentsTextarea.style.borderRadius = "8px";
+                  commentsTextarea.style.border = "1px solid #ccc";
+                  commentsTextarea.style.resize = "vertical";
+                  commentsTextarea.style.fontSize = "1rem";
+                  commentsTextarea.style.fontFamily = "inherit";
+                  details.appendChild(commentsTextarea);
+
+                  const createReportButton = document.createElement("button");
+                  createReportButton.style.width = "100%";
+                  createReportButton.style.padding = "0.6rem";
+                  createReportButton.style.marginTop = "1rem";
+                  createReportButton.style.background = "#72bdd4";
+                  createReportButton.style.color = "#ffffff";
+                  createReportButton.style.borderRadius = "12px";
+                  createReportButton.style.border = "none";
+                  createReportButton.style.boxShadow =
+                    "0 4px 12px rgba(0, 0, 0, 0.08)";
+                  createReportButton.textContent = "Create Report";
+                  createReportButton.style.cursor = "pointer";
+
+                  createReportButton.onclick = async () => {
+                    const success = await createReport(
+                      currentDoctorId,
+                      session.sessionId,
+                      commentsTextarea.value
+                    );
+
+                    if (success) {
+                      commentsTextarea.value = "";
+                    }
+                  };
+
+                  details.appendChild(createReportButton);
+                }
+              } catch (e) {
+                details.textContent = "Failed to load session details.";
+                console.error(e);
+              }
+            }
+          }
+        });
+
+        sessionsContainer.appendChild(sessionDiv);
+      });
+    } catch (err) {
+      console.error(err);
+      sessionsContainer.textContent = "Error loading sessions";
+      button.textContent = "View Sessions";
+    }
+  }
+
+  function renderSignalChart(canvas, dataStr) {
+    const ctx = canvas.getContext("2d");
+
+    let width = canvas.offsetWidth;
+    let height = canvas.offsetHeight;
+
+    if (width === 0) width = 600;
+    if (height === 0) height = 150;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    if (!dataStr) {
+      ctx.font = "16px Arial";
+      ctx.fillText("No data", 10, 50);
+      return;
+    }
+
+    const data = dataStr
+      .split(",")
+      .map((x) => parseFloat(x.trim()))
+      .filter((x) => !isNaN(x));
+
+    if (data.length === 0) {
+      ctx.font = "16px Arial";
+      ctx.fillText("No valid data", 10, 50);
+      return;
+    }
+
+    ctx.clearRect(0, 0, width, height);
+
+    const maxPoints = width;
+    let plotData;
+
+    if (data.length > maxPoints) {
+      const blockSize = Math.floor(data.length / maxPoints);
+      plotData = [];
+
+      for (let i = 0; i < data.length; i += blockSize) {
+        const block = data.slice(i, i + blockSize);
+        const avg = block.reduce((a, b) => a + b, 0) / block.length;
+        plotData.push(avg);
+      }
+    } else {
+      plotData = data;
+    }
+
+    const min = Math.min(...plotData);
+    const max = Math.max(...plotData);
+    const range = max - min || 1;
+
+    const scaleY = height / range;
+    const stepX = width / (plotData.length - 1);
+
+    ctx.strokeStyle = "#c4c0c0ff";
+    ctx.lineWidth = 0.5;
+
+    for (let x = 0; x < width; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+
+    for (let y = 0; y < height; y += 20) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = "#f36666";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+
+    plotData.forEach((val, i) => {
+      const x = i * stepX;
+      const y = height - (val - min) * scaleY;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+
+    ctx.stroke();
+
+    ctx.strokeStyle = "#bbb";
+    ctx.lineWidth = 0.7;
+    ctx.beginPath();
+    ctx.moveTo(0, height - (0 - min) * scaleY);
+    ctx.lineTo(width, height - (0 - min) * scaleY);
+    ctx.stroke();
+  }
+
+  function closeModal() {
+    modal.classList.remove("show");
+    modal.setAttribute("aria-hidden", "true");
+    btnApprove.focus();
+  }
+
+  function showToast(message, type = "success") {
+    const toast = document.createElement("div");
+    toast.className = `toast-notification ${type}`;
+    toast.innerHTML = `
+      <span class="toast-icon">${type === "success" ? "✔️" : "❌"}</span> 
+      <span><br>${message}</span>
+    `;
+    document.body.appendChild(toast);
+
+    toast.addEventListener("click", () => {
+      toast.remove();
+    });
+
+    setTimeout(() => {
+      toast.style.animation = "fadeout 0.5s ease forwards";
+      toast.addEventListener("animationend", () => {
+        toast.remove();
+      });
+    }, 2500);
+  }
+
+  function renderOverlaySignalChart(canvas, dataStr1, dataStr2) {
+    const ctx = canvas.getContext("2d");
+
+    let width = canvas.offsetWidth;
+    let height = canvas.offsetHeight;
+
+    if (width === 0) width = 600;
+    if (height === 0) height = 150;
+
+    canvas.width = width;
+    canvas.height = height;
+
+    ctx.clearRect(0, 0, width, height);
+
+    if (!dataStr1 && !dataStr2) {
+      ctx.font = "16px Arial";
+      ctx.fillText("No data", 10, 50);
+      return;
+    }
+
+    const parseData = (str) =>
+      str
+        ? str
+            .split(",")
+            .map((x) => parseFloat(x.trim()))
+            .filter((x) => !isNaN(x))
+        : [];
+
+    let data1 = parseData(dataStr1);
+    let data2 = parseData(dataStr2);
+
+    if (data1.length === 0 && data2.length === 0) {
+      ctx.font = "16px Arial";
+      ctx.fillText("No valid data", 10, 50);
+      return;
+    }
+
+    const maxPoints = width;
+    const reduceData = (data) => {
+      if (data.length > maxPoints) {
+        const blockSize = Math.floor(data.length / maxPoints);
+        const reduced = [];
+        for (let i = 0; i < data.length; i += blockSize) {
+          const block = data.slice(i, i + blockSize);
+          const avg = block.reduce((a, b) => a + b, 0) / block.length;
+          reduced.push(avg);
+        }
+        return reduced;
+      }
+      return data;
+    };
+
+    data1 = reduceData(data1);
+    data2 = reduceData(data2);
+
+    const combined = [...data1, ...data2];
+    const min = Math.min(...combined);
+    const max = Math.max(...combined);
+    const range = max - min || 1;
+
+    const scaleY = height / range;
+    const stepX = width / (Math.max(data1.length, data2.length) - 1);
+
+    ctx.strokeStyle = "#c4c0c0ff";
+    ctx.lineWidth = 0.5;
+
+    for (let x = 0; x < width; x += 40) {
+      ctx.beginPath();
+      ctx.moveTo(x, 0);
+      ctx.lineTo(x, height);
+      ctx.stroke();
+    }
+
+    for (let y = 0; y < height; y += 20) {
+      ctx.beginPath();
+      ctx.moveTo(0, y);
+      ctx.lineTo(width, y);
+      ctx.stroke();
+    }
+
+    ctx.strokeStyle = "#f36666";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    data1.forEach((val, i) => {
+      const x = i * stepX;
+      const y = height - (val - min) * scaleY;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    ctx.strokeStyle = "#1b3560ff";
+    ctx.lineWidth = 1.8;
+    ctx.beginPath();
+    data2.forEach((val, i) => {
+      const x = i * stepX;
+      const y = height - (val - min) * scaleY;
+      if (i === 0) ctx.moveTo(x, y);
+      else ctx.lineTo(x, y);
+    });
+    ctx.stroke();
+
+    ctx.strokeStyle = "#bbb";
+    ctx.lineWidth = 0.7;
+    ctx.beginPath();
+    ctx.moveTo(0, height - (0 - min) * scaleY);
+    ctx.lineTo(width, height - (0 - min) * scaleY);
+    ctx.stroke();
+  }
+/*delete*/
+
+
+  async function handleApprove(patientId) {
+    const confirmed = await showConfirmModal({
+      message: "Approve patient?",
+      type: "approve",
+    });
+    if (!confirmed) return;
+
+    try {
+      const res = await apiFetch(
+        `https://127.0.0.1:8443/api/doctors/me/approve/${patientId}`,
+        {
+          method: "POST",
+        }
+      );
+      if (!res.ok) {
+        showToast("Failed to approve", "error");
+        return;
+      }
+      showToast("Patient approved successfully!", "success");
+      await loadRequests();
+      await loadPatients();
+    } catch (err) {
+      console.error(err);
+      showToast("Network error, please try again.", "error");
+    }
+  }
+
+  async function handleReject(patientId) {
+    const confirmed = await showConfirmModal({
+      message: "Reject patient?",
+      type: "reject",
+    });
+    if (!confirmed) return;
+
+    try {
+      const res = await apiFetch(
+        `https://127.0.0.1:8443/api/doctors/me/reject/${patientId}`,
+        {
+          method: "POST",
+        }
+      );
+      if (!res.ok) {
+        showToast("Failed to reject", "error");
+        return;
+      }
+      showToast("Patient rejected successfully!", "success");
+      await loadRequests();
+      await loadPatients();
+    } catch (err) {
+      console.error(err);
+      showToast("Network error, please try again.", "error");
+    }
+  }
+
+  const doctorForm = document.querySelector(".doctor-info form");
+  const nameInput = document.getElementById("doctor-name");
+  const surnameInput = document.getElementById("doctor-surname");
+  const genderInput = document.getElementById("doctor-gender");
+  const localityInput = document.getElementById("doctor-locality");
+
+  async function loadDoctorInfo() {
+    try {
+      const res = await apiFetch("https://127.0.0.1:8443/api/doctors/me");
+      if (!res || !res.ok) return;
+
+      const doctor = await res.json();
+
+      console.log("Returned doctor object:", doctor);
+
+      document.getElementById("detail-name").textContent = doctor.name || "";
+      document.getElementById("detail-surname").textContent =
+        doctor.surname || "";
+      document.getElementById("detail-gender").textContent =
+        doctor.gender || "";
+      document.getElementById("detail-locality").textContent = doctor.locality
+        ? doctor.locality.name
+        : "";
+    } catch (err) {
+      console.error("Error loading doctor info:", err);
+    }
+  }
+
+  loadDoctorInfo();
+
+  doctorForm.addEventListener("submit", async (e) => {
+    e.preventDefault();
+
+    const payload = {};
+    if (nameInput.value) payload.name = nameInput.value;
+    if (surnameInput.value) payload.surname = surnameInput.value;
+    if (genderInput.value) payload.gender = genderInput.value;
+    if (localityInput.value) payload.locality = { name: localityInput.value };
+
+    try {
+      const res = await apiFetch("https://127.0.0.1:8443/api/doctors/me", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+      if (!res.ok) {
+        showToast("Failed to update doctor info.", "error");
+        return;
+      }
+
+      const updatedDoctor = await res.json();
+      showToast("Doctor info updated successfully!", "success");
+      loadDoctorInfo();
+    } catch (err) {
+      console.error(err);
+      showToast("Network error.", "error");
+    }
+  });
+
+  function showToast(message, type = "info", duration = 4000) {
+    const container = document.getElementById("toast-container");
+    if (!container) return;
+
+    const toast = document.createElement("div");
+    toast.classList.add("toast", `toast-${type}`);
+    toast.textContent = message;
+
+    container.appendChild(toast);
+
+    setTimeout(() => {
+      toast.style.transition = "transform 0.3s ease, opacity 0.3s ease";
+      toast.style.transform = "translateX(100%)";
+      toast.style.opacity = "0";
+
+      toast.addEventListener("transitionend", () => {
+        toast.remove();
+      });
+    }, duration);
+  }
+
+  async function createReport(doctorId, sessionId, comments = "") {
+    try {
+      const generateRes = await fetch(
+        `https://127.0.0.1:8443/api/doctors/${doctorId}/report/${sessionId}/generate?doctorsComments=${encodeURIComponent(
+          comments
+        )}`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+            "Content-Type": "application/json",
+          },
+        }
+      );
+
+      if (!generateRes.ok) {
+        showToast("Failed to generate report", "error");
+        return false;
+      }
+
+      const report = await generateRes.json();
+      const reportId = report.reportId;
+
+      const downloadRes = await fetch(
+        `https://127.0.0.1:8443/api/doctors/reports/${reportId}`,
+        {
+          method: "GET",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!downloadRes.ok) {
+        showToast("Failed to download report", "error");
+        return false;
+      }
+
+      const blob = await downloadRes.blob();
+      const url = window.URL.createObjectURL(blob);
+
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `report_${reportId}.pdf`;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      window.URL.revokeObjectURL(url);
+      return true;
+    } catch (err) {
+      console.error(err);
+      showToast("Network error while generating/downloading report", "error");
+      return false;
+    }
+  }
+
+  async function loadReports() {
+    const container = document.getElementById("reports-container");
+    container.innerHTML = "Loading reports...";
+    container.style.display = "grid";
+    container.style.gridTemplateColumns =
+      "repeat(auto-fill, minmax(100px, 1fr))";
+    container.style.gap = "1rem";
+    container.style.padding = "1rem";
+
+    try {
+      const res = await apiFetch(
+        "https://127.0.0.1:8443/api/doctors/me/reports"
+      );
+      if (!res.ok) {
+        container.innerHTML = "No reports found.";
+        return;
+      }
+
+      const reports = await res.json();
+      container.innerHTML = "";
+
+      reports.forEach((report) => {
+        const card = document.createElement("div");
+        card.className = "report-card";
+        card.style.borderRadius = "12px";
+        card.style.padding = "1rem 0.5rem";
+        card.style.textAlign = "center";
+        card.style.background = "#fafafa";
+        card.style.cursor = "pointer";
+        card.style.boxShadow = "0 4px 12px rgba(0, 0, 0, 0.08)";
+        card.style.transition = "transform 0.2s, box-shadow 0.2s";
+        card.style.display = "flex";
+        card.style.flexDirection = "column";
+        card.style.alignItems = "center";
+        card.style.justifyContent = "center";
+
+        card.innerHTML = `
+          <img src="../assets/svgs/file.svg" />
+          <div style="margin-top:0.5rem; font-size:0.85rem; color:grey;">
+            ${new Date(report.createdAt).toLocaleDateString()}
+          </div>
+        `;
+
+        card.addEventListener("mouseover", () => {
+          card.style.transform = "scale(1.05)";
+          card.style.boxShadow = "0 6px 15px rgba(0,0,0,0.15)";
+        });
+        card.addEventListener("mouseout", () => {
+          card.style.transform = "scale(1)";
+          card.style.boxShadow = "0 3px 8px rgba(0,0,0,0.1)";
+        });
+
+        card.addEventListener("click", async () => {
+          try {
+            const downloadRes = await apiFetch(
+              `https://127.0.0.1:8443/api/doctors/reports/${report.reportId}`
+            );
+            if (!downloadRes.ok) throw new Error("No report available for this session.");
+
+            const blob = await downloadRes.blob();
+            const url = window.URL.createObjectURL(blob);
+
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `report_${report.reportId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            window.URL.revokeObjectURL(url);
+          } catch (err) {
+            showToast(err.message, "error");
+          }
+        });
+
+        container.appendChild(card);
+      });
+    } catch (err) {
+      console.error(err);
+      container.innerHTML = "Error loading reports.";
+    }
+  }
+
+  loadReports();
+});

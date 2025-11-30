@@ -1,0 +1,602 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body,
+html {
+  font-size: 16px;
+  height: 100%;
+  font-family: "Roboto", sans-serif;
+}
+
+.nav-doctor {
+  position: relative;
+  width: 100%;
+  background: url("../assets/images/national-cancer-institute-BDKid0yJcAk-unsplash.jpg")
+    center/cover no-repeat;
+  padding: 2rem 3%;
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 1);
+}
+
+.nav-doctor::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 1;
+}
+
+.nav-doctor h1 {
+  font-size: 2rem;
+}
+
+.nav-doctor h1,
+.nav-doctor .links {
+  position: relative;
+  z-index: 2;
+  color: #f8f9f8dc;
+  display: flex;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+}
+
+.nav-doctor .links a,
+.nav-doctor .links button {
+  color: #f8f9f8dc;
+  text-decoration: none;
+  margin-left: 2rem;
+  font-weight: 500;
+  font-size: 1rem;
+  background: none;
+  border: none;
+  cursor: pointer;
+  transition: color 0.3s ease;
+}
+
+.nav-doctor .links a:hover,
+.nav-doctor .links button:hover {
+  color: #d53a3a;
+}
+
+.doctor-dashboard-header {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
+  background-color: #1a1a1a;
+  color: #ffffff;
+  border-bottom: 1px solid #ddd;
+}
+
+.doctor-dashboard-header h3 {
+  padding: 1.5rem 3%;
+}
+
+.sidebar {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  align-items: center;
+  padding: 1rem;
+  border-left: 1px solid rgba(255, 255, 255, 1);
+  max-width: 80px;
+  min-width: 60px;
+  width: 5vw;
+  height: auto;
+}
+
+.sidebar-dark {
+  border-left: 1px solid rgb(25, 25, 25);
+}
+
+.site-footer {
+  background-color: #1a1a1a;
+  color: #f0f0f0;
+  padding: 2rem 3rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+  text-align: center;
+  border-top: 2px solid #333;
+}
+
+.footer-content {
+  max-width: 1200px;
+  width: 100%;
+}
+
+.footer-brand {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 600;
+  font-size: 1.2rem;
+  margin-bottom: 1rem;
+}
+
+.footer-brand img {
+  width: 40px;
+  height: 40px;
+}
+
+.footer-links {
+  margin-bottom: 1rem;
+}
+
+.footer-links a {
+  color: #ccc;
+  text-decoration: none;
+  margin: 0 1rem;
+  transition: color 0.3s;
+}
+
+.footer-links a:hover {
+  color: #f05454;
+}
+
+.footer-copy {
+  font-size: 0.85rem;
+  color: #999;
+}
+
+.btn-logout {
+  background-color: #ff4d4f;
+  color: white;
+  border: none;
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  font-weight: bold;
+  border-radius: 0.5rem;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.btn-logout:hover {
+  background-color: #ff7875;
+}
+
+.btn-logout:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(255, 77, 79, 0.5);
+}
+
+.floating-box {
+  background: #ffffff !important;
+  padding: 2rem;
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  animation: fadeSlide 0.25s ease-out;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+}
+
+.floating-box h3 {
+  text-align: center;
+  margin-bottom: 2rem;
+  font-size: 1.5rem;
+  color: #f05454;
+}
+
+.floating-box tr td {
+  padding-top: 2rem;
+}
+
+.signal-grid {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+}
+
+.signal-btn {
+  background: #f05454;
+  border: none;
+  padding: 0.8rem 2.5rem;
+  color: white;
+  font-size: 1.2rem;
+  font-weight: bold;
+  border-radius: 25px;
+  cursor: pointer;
+}
+
+.signal-btn:hover {
+  background: #d94343;
+}
+
+.hidden {
+  display: none !important;
+}
+
+.request-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  padding: 0.6rem;
+  border-radius: 10px;
+  background: #fff;
+  margin-bottom: 0.5rem;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.08);
+}
+
+.request-left {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  background-color: #ffffff;
+  padding: 1rem 1.2rem;
+  border-radius: 12px;
+  font-size: 0.85rem;
+  color: #3e4042;
+  line-height: 1.5;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.request-left strong {
+  color: #f05454;
+  font-size: 0.95rem;
+}
+
+.request-actions {
+  margin: 1rem;
+}
+
+.request-actions {
+  display: flex;
+  gap: 0.8rem;
+}
+
+.accept-btn {
+  background: #8A9A5B;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.8rem;
+  border-radius: 20px;
+}
+
+.decline-btn {
+  background: #f05454;
+  color: white;
+  border: none;
+  padding: 0.5rem 0.8rem;
+  border-radius: 20px;
+}
+
+.toast-notification {
+  position: fixed;
+  top: 2rem;
+  right: 2rem;
+  background: #8A9A5B;
+  color: white;
+  padding: 1rem 1.5rem;
+  border-radius: 1rem;
+  box-shadow: 0 6px 15px rgba(42, 157, 143, 0.4);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+  opacity: 1;
+  animation: fadeout 0.5s ease forwards;
+  animation-delay: 2.5s;
+  z-index: 1000;
+  cursor: pointer;
+}
+
+.toast-notification.success {
+  background-color: #8A9A5B;
+}
+
+.toast-notification.error {
+  background-color: #d90429;
+}
+
+.toast-icon {
+  font-size: 1.3rem;
+}
+
+@keyframes fadeout {
+  to {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+}
+
+.modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.4);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 2000;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
+}
+
+.modal-overlay.show {
+  opacity: 1;
+  pointer-events: auto;
+}
+
+.modal-box {
+  background: white;
+  border-radius: 1rem;
+  padding: 2rem 2.5rem;
+  max-width: 320px;
+  width: 90%;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.2);
+  text-align: center;
+  font-family: "Roboto", sans-serif;
+}
+s .modal-box p {
+  font-size: 1.1rem;
+  margin-bottom: 1.5rem;
+  color: #333;
+  font-weight: 600;
+}
+
+.modal-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+}
+
+.modal-btn {
+  padding: 0.6rem 1.5rem;
+  border-radius: 0.7rem;
+  border: none;
+  cursor: pointer;
+  font-weight: 700;
+  font-size: 1rem;
+  transition: background-color 0.3s ease;
+}
+
+.modal-btn.approve {
+  background-color: #8A9A5B;
+  color: white;
+}
+
+.modal-btn.approve:hover {
+  background-color: #636e43;
+}
+
+.modal-btn.reject {
+  background-color: #ff6b6b;
+  color: white;
+}
+
+.modal-btn.reject:hover {
+  background-color: #e55050;
+}
+
+.modal-btn.cancel {
+  background-color: #ccc;
+  color: #333;
+}
+
+.modal-btn.cancel:hover {
+  background-color: #bbb;
+}
+
+#modal-message {
+  font-size: 1rem;
+  color: #5f6163;
+  margin-bottom: 1.5rem;
+}
+
+.view-sessions-btn {
+  background-color: #f36666;
+  color: white;
+  border: none;
+  padding: 0.4rem 0.8rem;
+  border-radius: 12px;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.view-sessions-btn:hover {
+  background-color: #c94f4f;
+}
+
+#sessions-container {
+  margin-top: 1rem;
+  width: 100%;
+  max-height: 300px;
+  overflow-y: auto;
+  background: #ddd;
+  border-radius: 15px;
+  padding: 1rem;
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.1);
+  font-family: "Roboto", sans-serif;
+}
+
+.session-item {
+  padding: 0.7rem 1rem;
+  border-bottom: 1px solid #ddd;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  cursor: pointer;
+}
+
+.session-item:last-child {
+  border-bottom: none;
+}
+
+.session-item:hover {
+  background-color: #ddd;
+}
+
+.session-details {
+  font-size: 0.85rem;
+  color: #555;
+}
+
+.doctor-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  padding: 3rem;
+  padding-left: 5rem;
+  padding-right: 5rem;
+  gap: 3rem;
+  max-width: 450px;
+  background: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+  max-height: 925px;
+}
+
+.doctor-info h2 {
+  font-size: 1.4rem;
+  font-weight: 600;
+  color: #f05454;
+  text-align: center;
+}
+
+.doctor-info-form {
+  display: grid;
+  grid-template-columns: 1fr;
+}
+
+.doctor-info-form div {
+  margin: 1rem;
+}
+
+.detail-group p {
+  width: 100%;
+}
+
+.doctor-details {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 5rem;
+  width: 100%;
+}
+
+table {
+  border-radius: 12px;
+  box-shadow: rgba(99, 99, 99, 0.2) 0px 2px 8px 0px;
+}
+
+#patients-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: "Inter", sans-serif;
+  font-size: 0.95rem;
+  color: #3e4042;
+}
+
+#patients-table thead {
+  background: #fafafa;
+}
+
+#patients-table th {
+  text-align: left;
+  padding: 12px 14px;
+  font-weight: 600;
+  color: #3e4042;
+}
+
+#patients-table td {
+  padding: 12px 14px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+#patients-table tbody tr {
+  transition: background 0.15s ease;
+}
+
+#patients-table tbody tr:hover {
+  background: #f0f4f8;
+}
+
+#doctors-map {
+  width: 100%;
+  height: 400px;
+  border-radius: 10px;
+  margin-top: 10px;
+}
+
+.doctor-info-edit {
+  max-height: 600px;
+  margin-top: 2rem;
+}
+
+.main-div {
+  display: grid;
+  grid-template-columns: 450px 1fr;
+  gap: 3rem;
+}
+
+.right-column {
+  gap: 3rem;
+}
+
+
+#toast-container {
+  position: fixed;
+  top: 40px;
+  right: 40px;
+  z-index: 9999;
+  width: 560px;
+  height: auto;
+  pointer-events: none; 
+}
+
+.toast {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 100%;
+  background-color: rgb(246, 241, 241);
+  color: #2f4461;
+  border-left: 6px solid #f05454;
+  border-radius: 16px;
+  padding: 1.5rem 2rem;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+  font-size: 1.05rem;
+  font-weight: 500;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  opacity: 0;
+  transform: translateX(100%);
+  animation: slideIn 0.3s forwards, fadeOut 0.3s 3.5s forwards;
+  line-height: 1.6;
+  letter-spacing: 0.2px;
+  pointer-events: auto; 
+}
+
+
+@keyframes slideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+    transform: translateX(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(100%);
+  }
+}

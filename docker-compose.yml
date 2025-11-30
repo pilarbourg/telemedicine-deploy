@@ -1,0 +1,43 @@
+services:
+  db:
+    image: postgres:16
+    container_name: telemedicine_db
+    environment:
+      POSTGRES_USER: pilarbourg
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: telemedicine_local
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./backend/database/db_dump:/docker-entrypoint-initdb.d
+    restart: unless-stopped
+
+  backend:
+    image: openjdk:22-jdk-slim
+    container_name: telemedicine_backend
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/app
+      - ./backend/telemedicine.p12:/app/telemedicine.p12:ro
+    working_dir: /app
+    command: >
+      bash -c "java -jar telemedicineApp-1.0-SNAPSHOT.war --spring.profiles.active=local"
+    ports:
+      - "8443:8443"
+    restart: unless-stopped
+    environment:
+      SPRING_DATASOURCE_URL: jdbc:postgresql://db:5432/telemedicine_local
+      SPRING_DATASOURCE_USERNAME: pilarbourg
+      SPRING_DATASOURCE_PASSWORD: password
+
+  frontend:
+    image: nginx:alpine
+    container_name: telemedicine_frontend
+    volumes:
+      - ./frontend:/usr/share/nginx/html:ro
+      - ./frontend/certs:/etc/nginx/certs:ro
+      - ./frontend/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    ports:
+      - "443:443"
+    restart: unless-stopped
