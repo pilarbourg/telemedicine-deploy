@@ -2,9 +2,6 @@
 
 <br />
 <div align="center">
-   <a href="https://github.com/alejandraoshea/sma-server">
-     <img src="images/logo.png" alt="SMA Server Logo" width="80" height="80">
-   </a>
   <h3 align="center">SMA Website Docker</h3>
 
   <p align="center">
