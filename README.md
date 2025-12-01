@@ -106,13 +106,13 @@ After startup, the platform will be available at:
 ### Platform Capabilities
 
 The system supports:
-• Patient and doctor management
-• ECG/EMG signal upload and storage
-• Measurement session creation and tracking
-• Automatic CSV summary generation
-• JWT-based authentication and authorization
-• Doctor approval workflows
-• Session reporting tools
+* Patient and doctor management
+* ECG/EMG signal upload and storage
+* Measurement session creation and tracking
+* Automatic PDF report generation
+* JWT-based authentication and authorization
+* Doctor approval workflows
+* Session reporting tools
 
 ### Stopping the Platform
 
@@ -121,14 +121,6 @@ To shut down all containers:
 ```sh
   docker-compose down
 ```
-
-<p align="right">(<a href="#readme-top">back to top</a>)</p>
-
-Top contributors:
-
-<a href="https://github.com/alejandraoshea/sma-server/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=alejandraoshea/sma-server" alt="contrib.rocks image" />
-</a>
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
