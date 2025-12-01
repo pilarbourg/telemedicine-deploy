@@ -40,7 +40,7 @@ Backend
 - Java
 - Spring Boot
 - Spring Security (JWT)
-- Spring Data JPA
+- Spring Data JDBC
 
 Database
 
