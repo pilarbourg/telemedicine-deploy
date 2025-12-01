@@ -97,12 +97,6 @@ After startup, the platform will be available at:
   http://127.0.0.1
 ```
 
-* Backend API:
-
-```sh
-  http://localhost:8443/api
-```
-
 ### Platform Capabilities
 
 The system supports:
