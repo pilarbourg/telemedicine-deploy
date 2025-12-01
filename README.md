@@ -86,18 +86,18 @@ Once the certificates are in place, start all services with:
 docker-compose up -d
 ```
 
-This will launch the backend, frontend, and database containers. The web app should now be accessible locally at https://localhost.
+This will launch the backend, frontend, and database containers. The web app should now be accessible locally at https://127.0.0.1.
 
 #### Service Access
 
 After startup, the platform will be available at:
-• Frontend:
+* Frontend:
 
 ```sh
-  http://localhost
+  http://127.0.0.1
 ```
 
-    •	Backend API:
+* Backend API:
 
 ```sh
   http://localhost:8443/api
