@@ -53,10 +53,6 @@ Deployment
 
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
-Here is the Usage section in clean, copy-paste-ready Markdown:
-
-⸻
-
 ## Usage
 
 ### Starting the Platform
