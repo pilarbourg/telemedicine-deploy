@@ -115,6 +115,13 @@ To shut down all containers:
   docker-compose down
 ```
 
+#### Troubleshooting / Contact
+
+If you have any issues accessing the platform, especially related to certificates or browser warnings, please let us know.  
+
+You can report issues here: [Open an Issue](https://github.com/pilarbourg/telemedicine-deploy/issues/new)  
+Or contact us at: pilar.bourg@usp.ceu.es
+
 <p align="right">(<a href="#readme-top">back to top</a>)</p>
 
 License
