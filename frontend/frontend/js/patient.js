@@ -89,7 +89,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return;
       }
 
-      showToast("Doctor requested successfully!", "success");
+      showToast("✓ Doctor requested successfully!", "success");
       doctorsForm.reset();
       loadDoctorStatus();
     } catch (err) {
@@ -237,7 +237,7 @@ document.addEventListener("DOMContentLoaded", () => {
       }
 
       const updatedPatient = await res.json();
-      showToast("Patient info updated successfully!", "success");
+      showToast("✓ Patient info updated successfully!", "success");
       loadPatientInfo();
     } catch (err) {
       console.error(err);

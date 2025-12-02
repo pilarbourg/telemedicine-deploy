@@ -153,6 +153,8 @@
       </div>
     </footer>
 
+    <div id="toast-container"></div>
+
     <div id="login" class="form-popup">
       <div class="form-popup-content">
         <button class="close-button" onclick="closeForm()">×</button>
@@ -200,7 +202,7 @@
           e.preventDefault();
           const role = item.getAttribute("data-role");
           roleInput.value = role;
-          btn.childNodes[0].textContent = item.textContent;
+          btn.firstChild.textContent = item.textContent + " ";
           dropdown.classList.remove("show");
         });
       });
